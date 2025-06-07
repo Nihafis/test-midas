@@ -1,22 +1,12 @@
-function getMinMove(
-    startPos: string,
-    endPos: string,
-    blocked: string[]
-  ): number {
+function getMinMove(startPos: string, endPos: string, blocked: string[]): number {
     const knightSteps = [
-      [1, 2],
-      [2, 1],
-      [-1, 2],
-      [-2, 1],
-      [-1, -2],
-      [-2, -1],
-      [1, -2],
-      [2, -1],
+      [1, 2], [2, 1], [-1, 2], [-2, 1],
+      [-1, -2], [-2, -1], [1, -2], [2, -1],
     ];
   
     function toXY(pos: string): [number, number] {
-      const col = pos[0].toLowerCase().charCodeAt(0) - 97; // 'a' to 0
-      const row = parseInt(pos[1]) - 1; // '1' to 0
+      const col = pos[0].toLowerCase().charCodeAt(0) - 97;
+      const row = 8 - parseInt(pos[1]); 
       return [col, row];
     }
   
@@ -25,10 +15,8 @@ function getMinMove(
     }
   
     const blockedTiles = new Set<string>();
-    blocked.forEach((group) => {
-      group.split(",").forEach((tile) => {
-        blockedTiles.add(tile.trim().toLowerCase());
-      });
+    blocked.forEach(tile => {
+      blockedTiles.add(tile.trim().toLowerCase());
     });
   
     const [startX, startY] = toXY(startPos);
@@ -39,7 +27,7 @@ function getMinMove(
   
     for (let i = 0; i < queue.length; i++) {
       const [[x, y], step] = queue[i];
-      const currentKey = `${String.fromCharCode(97 + x)}${y + 1}`;
+      const currentKey = `${String.fromCharCode(97 + x)}${8 - y}`;
   
       if (x === targetX && y === targetY) {
         return step;
@@ -56,7 +44,7 @@ function getMinMove(
         const nextY = y + dy;
   
         if (inBoard(nextX, nextY)) {
-          const nextKey = `${String.fromCharCode(97 + nextX)}${nextY + 1}`;
+          const nextKey = `${String.fromCharCode(97 + nextX)}${8 - nextY}`;
           if (!visited.has(nextKey) && !blockedTiles.has(nextKey)) {
             queue.push([[nextX, nextY], step + 1]);
           }
@@ -67,5 +55,5 @@ function getMinMove(
     return -1;
   }
   
-  console.log(getMinMove("d7", "h8", ["f6,f7,f8"]));
+  console.log(getMinMove("d6", "h8", ["f6","f7"])); 
   
