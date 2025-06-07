@@ -1,65 +1,71 @@
-
-function getMinMove(start: string,
-    target: string,
-    brokenTiles: string[]
-): number {
-
-    const directions = [
-        [2, 1],
-        [1, 2],
-        [-1, 2],
-        [-2, 1],
-        [-2, -1],
-        [-1, -2],
-        [1, -2],
-        [2, -1],
+function getMinMove(
+    startPos: string,
+    endPos: string,
+    blocked: string[]
+  ): number {
+    const knightSteps = [
+      [1, 2],
+      [2, 1],
+      [-1, 2],
+      [-2, 1],
+      [-1, -2],
+      [-2, -1],
+      [1, -2],
+      [2, -1],
     ];
-
-    const isInBounds = (x: number, y: number) =>
-        x >= 0 && x < 8 && y >= 0 && y < 8;
-
-    const toCoord = (pos: string): [number, number] => {
-        const file = pos[0].toLowerCase();
-        const rank = parseInt(pos[1], 10);
-        return [file.charCodeAt(0) - "a".charCodeAt(0), rank - 1]; // x, y
-    };
-
-    const brokenSet = new Set<string>();
-    for (const tileGroup of brokenTiles) {
-        for (const tile of tileGroup.split(",")) {
-            brokenSet.add(tile.trim().toLowerCase());
-        }
+  
+    function toXY(pos: string): [number, number] {
+      const col = pos[0].toLowerCase().charCodeAt(0) - 97; // 'a' to 0
+      const row = parseInt(pos[1]) - 1; // '1' to 0
+      return [col, row];
     }
-
+  
+    function inBoard(x: number, y: number): boolean {
+      return x >= 0 && x < 8 && y >= 0 && y < 8;
+    }
+  
+    const blockedTiles = new Set<string>();
+    blocked.forEach((group) => {
+      group.split(",").forEach((tile) => {
+        blockedTiles.add(tile.trim().toLowerCase());
+      });
+    });
+  
+    const [startX, startY] = toXY(startPos);
+    const [targetX, targetY] = toXY(endPos);
+  
     const visited = new Set<string>();
-    const queue: Array<[[number, number], number]> = [[toCoord(start), 0]];
-    const targetCoord = toCoord(target);
-
-    while (queue.length > 0) {
-        const [[x, y], moves] = queue.shift()!;
-        const posStr = `${String.fromCharCode(x + 97)}${y + 1}`;
-
-        if (x === targetCoord[0] && y === targetCoord[1]) {
-            return moves;
+    const queue: Array<[[number, number], number]> = [[[startX, startY], 0]];
+  
+    for (let i = 0; i < queue.length; i++) {
+      const [[x, y], step] = queue[i];
+      const currentKey = `${String.fromCharCode(97 + x)}${y + 1}`;
+  
+      if (x === targetX && y === targetY) {
+        return step;
+      }
+  
+      if (visited.has(currentKey) || blockedTiles.has(currentKey)) {
+        continue;
+      }
+  
+      visited.add(currentKey);
+  
+      for (const [dx, dy] of knightSteps) {
+        const nextX = x + dx;
+        const nextY = y + dy;
+  
+        if (inBoard(nextX, nextY)) {
+          const nextKey = `${String.fromCharCode(97 + nextX)}${nextY + 1}`;
+          if (!visited.has(nextKey) && !blockedTiles.has(nextKey)) {
+            queue.push([[nextX, nextY], step + 1]);
+          }
         }
-
-        if (visited.has(posStr) || brokenSet.has(posStr)) continue;
-        visited.add(posStr);
-
-        for (const [dx, dy] of directions) {
-            const nx = x + dx;
-            const ny = y + dy;
-
-            if (isInBounds(nx, ny)) {
-                const nextStr = `${String.fromCharCode(nx + 97)}${ny + 1}`;
-                if (!visited.has(nextStr) && !brokenSet.has(nextStr)) {
-                    queue.push([[nx, ny], moves + 1]);
-                }
-            }
-        }
+      }
     }
-
-    return -1; // Target not reachable
-}
-
-console.log(getMinMove("d7", "h8", ["f6,f7,f8"]));
+  
+    return -1;
+  }
+  
+  console.log(getMinMove("d7", "h8", ["f6,f7,f8"]));
+  
